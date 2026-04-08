@@ -1,0 +1,22 @@
+name: Notify Verdict
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  notify:
+    if: github.event.label.name == 'evaluate'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Verdict evaluation
+        run: |
+          curl -X POST "${{ secrets.VERDICT_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.WEBHOOK_SECRET }}" \
+            -d '{
+              "event": "evaluate",
+              "issue_number": ${{ github.event.issue.number }},
+              "issue_title": "${{ github.event.issue.title }}",
+              "repo": "${{ github.repository }}"
+            }'
