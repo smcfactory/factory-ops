@@ -1,0 +1,22 @@
+name: Notify Scout
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  notify:
+    if: startsWith(github.event.comment.body, '[VERDICT]') && github.event.comment.user.login == 'verdict-partnerai'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Scout response
+        run: |
+          curl -X POST "${{ secrets.SCOUT_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.WEBHOOK_SECRET }}" \
+            -d '{
+              "event": "verdict_comment",
+              "issue_number": ${{ github.event.issue.number }},
+              "comment_id": ${{ github.event.comment.id }},
+              "repo": "${{ github.repository }}"
+            }'
